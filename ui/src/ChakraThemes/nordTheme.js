@@ -26,7 +26,7 @@ const nordTheme = extendTheme({
           color: "nord1",
         },
       }),
-    }
+    },
 });
 
 export default nordTheme;

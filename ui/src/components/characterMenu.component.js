@@ -10,14 +10,14 @@ import {
   Link, 
   Spinner,
   useDisclosure,
-  Button
+  useToast
 } from "@chakra-ui/react"
 
 import {
     PlusSquareIcon,
-    EditIcon
 } from "@chakra-ui/icons"
 import CharacterAddModal from "./modals/characterAdd.component";
+import CharacterMenuItem from "./characterMenuItem.component";
 
 const fetchCharacterList = async () => {
   const response = await fetch('/v1/characters');
@@ -35,6 +35,7 @@ function CharacterMenu() {
   const setCharacters = mainStore(state => state.setCharacters);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
   const { 
     isOpen: isCharacterAddModalOpen,
     onOpen: onCharacterAddModalOpen,
@@ -50,6 +51,32 @@ function CharacterMenu() {
   const editCharacter = (characterIndex) => {
     setSelectedCharacter(characters[characterIndex]);
     onCharacterEditModalOpen();
+  };
+
+  const deleteCharacter = (characterIndex) => {
+    setSelectedCharacter(characters[characterIndex]);
+    deleteCharacterRequest(characters[characterIndex].id).then(() => {
+        toast({
+            title: "Character deleted.",
+            description: "Character has been deleted.",
+            status: "success",
+            duration: 4000,
+        });
+    });
+  }
+
+  const deleteCharacterRequest = async (characterId) => {
+    try {
+        const response = await fetch(`/v1/characters/${characterId}`, {
+            method: 'DELETE',
+        });
+
+        if (response.status !== 200) {
+            throw Error(response.message);
+        }
+    } catch(error) {
+        console.error(error);
+    }
   };
 
   const closeCharacterModal = (callback) => {
@@ -74,18 +101,13 @@ function CharacterMenu() {
             <AccordionItem>
             <AccordionButton p={0}>
                 Characters
-                <AccordionIcon ml='50px' />
+                <AccordionIcon ml='100px' />
             </AccordionButton>
             <AccordionPanel>
                 {
                     characters &&
                     characters.map((character, index) => (
-                        <Box key={index}>
-                            <Link href={`/characters/${character.id}`}>{character.name}</Link>
-                            <Button onClick={() => editCharacter(index)} ml='5' bg='transparent'>
-                                <EditIcon/>
-                            </Button>
-                        </Box>
+                        <CharacterMenuItem character={character} index={index} editCharacterCallback={editCharacter} deleteCharacter={deleteCharacter} key={index}></CharacterMenuItem>
                     ))
                 }
                 <Box>
@@ -101,7 +123,6 @@ function CharacterMenu() {
         </Accordion>
         <CharacterAddModal isOpen={isCharacterAddModalOpen} onClose={() => closeCharacterModal(onCharacterAddModalClose)}/>
         <CharacterAddModal isOpen={isCharacterEditModalOpen} onClose={() => closeCharacterModal(onCharacterEditModalClose)} selectedCharacterData={selectedCharacter}/>
-
     </div>
   );
 }

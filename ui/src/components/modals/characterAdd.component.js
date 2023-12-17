@@ -160,8 +160,8 @@ function CharacterAddModal({isOpen, onClose, selectedCharacterData}) {
                             ) : (
                                 <>
                                     <img src={characterImage}/>
-                                    <Button onClick={clearCharacterImage}>
-                                        Replace
+                                    <Button onClick={clearCharacterImage} mt={10}>
+                                        Remove
                                     </Button>
                                 </>
                             )}
